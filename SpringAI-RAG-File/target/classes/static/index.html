@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>RAG 知识库助手</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { max-width: 800px; margin: auto; }
+        .section { border: 1px solid #ccc; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+        h2 { margin-top: 0; }
+        input, textarea { width: 100%; padding: 8px; margin: 10px 0; box-sizing: border-box; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { background: #f5f5f5; padding: 15px; border-radius: 4px; margin-top: 10px; white-space: pre-wrap; }
+        .loading { color: #999; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>RAG 知识库助手</h1>
+
+    <!-- 上传文档区域 -->
+    <div class="section">
+        <h2>上传文档</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" name="file" accept=".txt" required>
+            <button type="submit">上传并处理</button>
+        </form>
+        <div id="uploadResult" class="result"></div>
+    </div>
+
+    <!-- 问答区域 -->
+    <div class="section">
+        <h2>问答</h2>
+        <input type="text" id="question" placeholder="请输入你的问题">
+        <button onclick="askQuestion()">提问</button>
+        <div id="answer" class="result"></div>
+    </div>
+</div>
+
+<script>
+    // 文件上传
+    document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const uploadResult = document.getElementById('uploadResult');
+        uploadResult.innerHTML = '上传中...';
+        uploadResult.className = 'result loading';
+
+        try {
+            const response = await fetch('/rag/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const text = await response.text();
+            uploadResult.innerHTML = text;
+            uploadResult.className = 'result';
+        } catch (error) {
+            uploadResult.innerHTML = '上传失败：' + error;
+            uploadResult.className = 'result';
+        }
+    });
+
+    // 提问
+    async function askQuestion() {
+        const question = document.getElementById('question').value;
+        if (!question.trim()) {
+            alert('请输入问题');
+            return;
+        }
+        const answerDiv = document.getElementById('answer');
+        answerDiv.innerHTML = '思考中...';
+        answerDiv.className = 'result loading';
+
+        try {
+            const response = await fetch('/rag/query?question=' + encodeURIComponent(question));
+            const text = await response.text();
+            answerDiv.innerHTML = text.replace(/\n/g, '<br>');
+            answerDiv.className = 'result';
+        } catch (error) {
+            answerDiv.innerHTML = '请求失败：' + error;
+            answerDiv.className = 'result';
+        }
+    }
+</script>
+</body>
+</html>

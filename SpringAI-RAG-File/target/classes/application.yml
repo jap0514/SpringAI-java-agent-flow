@@ -1,0 +1,41 @@
+spring:
+  ai:
+    dashscope:
+      api-key: ${aliQwen-api}  # 建议通过环境变量注入，避免硬编码
+      #base-url: https://dashscope.aliyuncs.com/compatible-mode/v1   # 可选，默认就是此地址
+      embedding:
+        options:
+          model: text-embedding-v3
+      chat:
+        options:
+          timeout: 180000
+          model: qwen-plus                # 使用的模型，可选 qwen-turbo, qwen-plus, qwen-max 等
+          temperature: 0.8                 # 温度，控制随机性
+  #          max-tokens: 2000                  # 最大输出 token 数
+
+
+
+    # Qdrant 向量存储配置
+    vectorstore:
+      qdrant:
+        host: 192.168.71.140                     # Qdrant 服务地址，默认 localhost
+        port: 6334                           # gRPC 端口，默认 6334
+        collection-name: collection_rag       # 集合名称
+        api-key:                              # 如果 Qdrant 开启了 API Key，在这里填写
+        use-tls: false                        # 是否使用 TLS
+        initialize-schema: true   # 自动创建集合（若不存在）
+
+# 可选：日志级别，方便调试
+logging:
+  level:
+    org.springframework.ai: DEBUG
+    com.alibaba.cloud.ai: DEBUG
+
+# 可选：启用 actuator 端点监控
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+server:
+  port: 9000
